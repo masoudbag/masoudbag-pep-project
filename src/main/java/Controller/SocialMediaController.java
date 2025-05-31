@@ -7,6 +7,7 @@ import Model.Account; // Import Account model
 import Service.AccountService; // Import AccountService
 import Model.Message; // Import Message model
 import Service.MessageService; // Import MessageService
+import java.util.List; // Import List
 
 
 
@@ -41,6 +42,13 @@ public class SocialMediaController {
 
         // --- Requirement 3: Create New Message ---
         app.post("/messages", ctx -> createMessageHandler(ctx));
+
+        // --- Requirement 4: Retrieve All Messages ---
+        app.get("/messages", ctx -> getAllMessagesHandler(ctx));
+
+        // --- Requirement 5: Retrieve a message by its ID ---
+        app.get("/messages/{message_id}", ctx -> getMessageByIdHandler(ctx));
+
 
         return app;
     }
@@ -106,5 +114,35 @@ public class SocialMediaController {
             context.status(400); // Client error (invalid message, or posted_by user doesn't exist)
         }
     }
-}    
+
+    /**
+     * Handler for GET /messages endpoint.
+     * Retrieves all messages.
+     * @param context The Javalin Context object.
+     */
+    private void getAllMessagesHandler(Context context) {
+        List<Message> messages = messageService.getAllMessages();
+        context.status(200); // Always 200 OK
+        context.json(messages); // Returns an empty list if no messages
+    }
+
+    /**
+     * Handler for GET /messages/{message_id} endpoint.
+     * Retrieves a message by its ID.
+     * @param context The Javalin Context object.
+     */
+    private void getMessageByIdHandler(Context context) {
+        int messageId = Integer.parseInt(context.pathParam("message_id"));
+        Message message = messageService.getMessageById(messageId);
+
+        if (message != null) {
+            context.status(200); // OK
+            context.json(message);
+        } else {
+            // As per requirement, if message does not exist, status is 200, body is empty
+            context.status(200);
+            context.json(""); // Represents an empty JSON response body
+        }
+    }
+}
 

@@ -3,6 +3,8 @@ package Service;
 import DAO.MessageDAO;
 import Model.Message;
 
+import java.util.List; // Import List
+
 public class MessageService {
 
     private MessageDAO messageDAO;
@@ -42,5 +44,21 @@ public class MessageService {
         }
 
         return messageDAO.createMessage(message);
+    }
+/**
+     * Retrieves all messages.
+     * @return A list of all messages.
+     */
+    public List<Message> getAllMessages() {
+        return messageDAO.getAllMessages();
+    }
+
+    /**
+     * Retrieves a message by its ID.
+     * @param messageId The ID of the message to retrieve.
+     * @return The Message object if found, or null if not found.
+     */
+    public Message getMessageById(int messageId) {
+        return messageDAO.getMessageById(messageId);
     }
 }
