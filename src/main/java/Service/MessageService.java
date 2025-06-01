@@ -100,9 +100,6 @@ public class MessageService {
      * @return A list of messages posted by the user, or an empty list if none exist.
      */
     public List<Message> getMessagesByAccountId(int accountId) {
-        // While not strictly required by the prompt's negative case (empty list is expected),
-        // you *could* add a check here if you wanted to differentiate between "user doesn't exist"
-        // and "user exists but has no messages". For now, we follow the prompt directly.
         // if (!accountService.doesAccountExist(accountId)) {
         //     return new ArrayList<>(); // Or throw an exception, or return null based on stricter requirements
         // }

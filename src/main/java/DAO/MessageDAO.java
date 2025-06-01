@@ -8,9 +8,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-
-import java.util.ArrayList; // Import ArrayList
-import java.util.List;     // Import List
+import java.util.ArrayList; 
+import java.util.List;     
 
 public class MessageDAO {
 
@@ -66,9 +65,9 @@ public class MessageDAO {
     }
 
     /**
-     * Retrieves a message by its unique ID.
+     * Retrieves a message by its ID.
      * @param messageId The ID of the message to retrieve.
-     * @return The Message object if found, null otherwise.
+     * @return The Message if found, null otherwise.
      */
     public Message getMessageById(int messageId) {
         try (Connection connection = ConnectionUtil.getConnection()) {
@@ -85,7 +84,7 @@ public class MessageDAO {
                         rs.getLong("time_posted_epoch")
                 );
             }
-            return null; // No message with that ID found
+            return null; 
         } catch (SQLException e) {
             System.err.println("SQL Exception while getting message by ID: " + e.getMessage());
             return null;
@@ -98,7 +97,7 @@ public class MessageDAO {
      * @return The Message object that was deleted if successful, null if the message didn't exist or deletion failed.
      */
     public Message deleteMessage(int messageId) {
-        // First, retrieve the message to return it if deletion is successful
+        // Retrieve the message to return it if deletion is successful
         Message deletedMessage = getMessageById(messageId);
 
         if (deletedMessage != null) {
@@ -132,7 +131,7 @@ public class MessageDAO {
             int rowsAffected = ps.executeUpdate();
 
             if (rowsAffected > 0) {
-                // Fetch and return the fully updated message from the database
+                // Fetch and return the updated message from the database
                 return getMessageById(messageId);
             }
             return null; // No message found with that ID or update failed
