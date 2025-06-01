@@ -18,12 +18,15 @@ import java.util.List; // Import List
  */
 public class SocialMediaController {
 
-    private AccountService accountService; // Declare service
-    private MessageService messageService; // Declare message service
+    // Declaring Services
+    private AccountService accountService; 
+    private MessageService messageService; 
 
     public SocialMediaController() {
-        this.accountService = new AccountService(); // Initialize service in constructor
-        this.messageService = new MessageService(); // Initialize message service
+
+    // Initialize services
+        this.accountService = new AccountService(); 
+        this.messageService = new MessageService(); 
     }
     /**
      * In order for the test cases to work, you will need to write the endpoints in the startAPI() method, as the test
@@ -34,20 +37,29 @@ public class SocialMediaController {
         Javalin app = Javalin.create();
         app.get("example-endpoint", this::exampleHandler);
 
-        // --- Requirement 1: Register New User ---
+        // --- Register New User ---
         app.post("/register", ctx -> registerAccountHandler(ctx));
 
-        // --- Requirement 2: User Login ---
+        // --- User Login ---
         app.post("/login", ctx -> loginAccountHandler(ctx));
 
-        // --- Requirement 3: Create New Message ---
+        // --- Create New Message ---
         app.post("/messages", ctx -> createMessageHandler(ctx));
 
-        // --- Requirement 4: Retrieve All Messages ---
+        // --- Retrieve All Messages ---
         app.get("/messages", ctx -> getAllMessagesHandler(ctx));
 
-        // --- Requirement 5: Retrieve a message by its ID ---
+        // --- Retrieve a message by its ID ---
         app.get("/messages/{message_id}", ctx -> getMessageByIdHandler(ctx));
+
+        // --- Delete a message by a message ID ---
+        app.delete("/messages/{message_id}", ctx -> deleteMessageHandler(ctx));
+
+        // --- Update a message by a message ID ---
+        app.patch("/messages/{message_id}", ctx -> updateMessageTextHandler(ctx));
+
+        // --- Retrieve all messages by a particular user ---
+        app.get("/accounts/{account_id}/messages", ctx -> getMessagesByAccountIdHandler(ctx));
 
 
         return app;
@@ -143,6 +155,74 @@ public class SocialMediaController {
             context.status(200);
             context.json(""); // Represents an empty JSON response body
         }
+    }
+
+    /**
+     * Handler for DELETE /messages/{message_id} endpoint.
+     * Deletes a message identified by its ID.
+     * @param context The Javalin Context object.
+     */
+    private void deleteMessageHandler(Context context) {
+        int messageId = Integer.parseInt(context.pathParam("message_id"));
+        Message deletedMessage = messageService.deleteMessage(messageId);
+
+        context.status(200); // Always 200 OK as per requirement (idempotent DELETE)
+        if (deletedMessage != null) {
+            context.json(deletedMessage); // Return the deleted message if it existed
+        } else {
+            context.json(""); // Return empty body if message did not exist
+        }
+    }
+
+    /**
+     * Helper class to parse the JSON body for PATCH /messages/{message_id}
+     * Assuming the body is like: `{"message_text": "new text"}`
+     */
+    private static class MessageUpdateBody {
+        public String message_text;
+
+        public String getMessage_text() {
+            return message_text;
+        }
+
+        public void setMessage_text(String message_text) {
+            this.message_text = message_text;
+        }
+    }
+
+    /**
+     * Handler for PATCH /messages/{message_id} endpoint.
+     * Updates the text of an existing message.
+     * @param context The Javalin Context object.
+     */
+    private void updateMessageTextHandler(Context context) {
+        int messageId = Integer.parseInt(context.pathParam("message_id"));
+        
+        // Parse the request body into our helper class
+        MessageUpdateBody updateBody = context.bodyAsClass(MessageUpdateBody.class);
+        String newText = updateBody.getMessage_text();
+
+        Message updatedMessage = messageService.updateMessage(messageId, newText);
+
+        if (updatedMessage != null) {
+            context.status(200); // OK
+            context.json(updatedMessage); // Return the full updated message
+        } else {
+            context.status(400); // Client error (message not found, invalid text, etc.)
+        }
+    }
+
+    /**
+     * Handler for GET /accounts/{account_id}/messages endpoint.
+     * Retrieves all messages posted by a particular user.
+     * @param context The Javalin Context object.
+     */
+    private void getMessagesByAccountIdHandler(Context context) {
+        int accountId = Integer.parseInt(context.pathParam("account_id"));
+        List<Message> messages = messageService.getMessagesByAccountId(accountId);
+
+        context.status(200); // Always 200 OK
+        context.json(messages); // Returns an empty list if no messages or user doesn't exist (as per current service logic)
     }
 }
 

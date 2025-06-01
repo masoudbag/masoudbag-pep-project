@@ -91,4 +91,81 @@ public class MessageDAO {
             return null;
         }
     }
-}    
+
+    /**
+     * Deletes a message by its ID.
+     * @param messageId The ID of the message to delete.
+     * @return The Message object that was deleted if successful, null if the message didn't exist or deletion failed.
+     */
+    public Message deleteMessage(int messageId) {
+        // First, retrieve the message to return it if deletion is successful
+        Message deletedMessage = getMessageById(messageId);
+
+        if (deletedMessage != null) {
+            try (Connection connection = ConnectionUtil.getConnection()) {
+                String sql = "DELETE FROM message WHERE message_id = ?";
+                PreparedStatement ps = connection.prepareStatement(sql);
+                ps.setInt(1, messageId);
+                int rowsAffected = ps.executeUpdate();
+                if (rowsAffected > 0) {
+                    return deletedMessage; // Return the message that was just deleted
+                }
+            } catch (SQLException e) {
+                System.err.println("SQL Exception during message deletion: " + e.getMessage());
+            }
+        }
+        return null; // Message didn't exist or deletion failed
+    }
+
+    /**
+     * Updates the text of an existing message.
+     * @param messageId The ID of the message to update.
+     * @param newText The new text for the message.
+     * @return The updated Message object if successful, null otherwise.
+     */
+    public Message updateMessageText(int messageId, String newText) {
+        try (Connection connection = ConnectionUtil.getConnection()) {
+            String sql = "UPDATE message SET message_text = ? WHERE message_id = ?";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setString(1, newText);
+            ps.setInt(2, messageId);
+            int rowsAffected = ps.executeUpdate();
+
+            if (rowsAffected > 0) {
+                // Fetch and return the fully updated message from the database
+                return getMessageById(messageId);
+            }
+            return null; // No message found with that ID or update failed
+        } catch (SQLException e) {
+            System.err.println("SQL Exception during message text update: " + e.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Retrieves all messages posted by a specific account.
+     * @param accountId The ID of the account whose messages to retrieve.
+     * @return A list of messages posted by the user, or an empty list if none exist.
+     */
+    public List<Message> getMessagesByAccountId(int accountId) {
+        List<Message> messages = new ArrayList<>();
+        try (Connection connection = ConnectionUtil.getConnection()) {
+            String sql = "SELECT * FROM message WHERE posted_by = ?";
+            PreparedStatement ps = connection.prepareStatement(sql);
+            ps.setInt(1, accountId);
+            ResultSet rs = ps.executeQuery();
+
+            while (rs.next()) {
+                messages.add(new Message(
+                        rs.getInt("message_id"),
+                        rs.getInt("posted_by"),
+                        rs.getString("message_text"),
+                        rs.getLong("time_posted_epoch")
+                ));
+            }
+        } catch (SQLException e) {
+            System.err.println("SQL Exception while getting messages by account ID: " + e.getMessage());
+        }
+        return messages;
+    }
+}

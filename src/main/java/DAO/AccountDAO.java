@@ -66,7 +66,7 @@ public class AccountDAO {
     }
 
 /**
-     * Retrieves an account by its username and password (for login verification).
+     * Retrieves an account by its username and password.
      * @param username The username for login.
      * @param password The password for login.
      * @return The Account object if credentials match, null otherwise.
@@ -86,7 +86,7 @@ public class AccountDAO {
                         rs.getString("password")
                 );
             }
-            return null; // No matching account found
+            return null; 
         } catch (SQLException e) {
             System.err.println("SQL Exception while getting account by username and password: " + e.getMessage());
             return null;
@@ -94,8 +94,8 @@ public class AccountDAO {
     }
 
     /**
-     * Retrieves an account by its ID. Used to verify if a user exists.
-     * @param accountId The ID of the account to search for.
+     * Retrieves an account by its ID to verify if a user exists.
+     * @param accountId The ID of the account.
      * @return The Account object if found, null otherwise.
      */
     public Account getAccountById(int accountId) {
